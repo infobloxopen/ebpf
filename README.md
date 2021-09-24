@@ -37,23 +37,24 @@ If `my_xdp_program.o` defines a map with a 4 byte key, and the following struct 
 struct maprec {
   __be32  ip4net;  // ipv4 network
   __be32  ip4mask; // ipv4 mask
+  __be32  count;   // packet count
 };
 ```
 
-The following will attach `my_xdp_program.o` to `eth0`, and load data for IP network `10.11.0.0` and
-mask `255.255.0.0` (`0A0B0000` and `FFFF00000` respectively) into key `00000000` of the map. 
+The following will attach `my_xdp_program.o` to `eth0`, and load data for IP network `10.11.0.0` ,
+IP mask `255.255.0.0`, and a count of zero (`0A0B0000`, `FFFF0000`, and `00000000` respectively) into key `00000000` of the map. 
 
 ```
 . {
   ebpf {
     if eth0
     elf my_xdp_program.o
-    map 00000000 0A0B0000FFFF00000
+    map 00000000 0A0B0000FFFF000000000000
   }
 }
 ```
 
-Enable debug to monitor map values and log when they change.
+The following will enable debug to monitor map values and log when they change.
 
 ```
 . {
@@ -61,7 +62,7 @@ Enable debug to monitor map values and log when they change.
   ebpf {
     if eth0
     elf my_xdp_program.o
-    map 00000000 000000020A0B0000FFFF00000
+    map 00000000 0A0B0000FFFF000000000000
   }
 }
 ```
