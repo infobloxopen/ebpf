@@ -8,5 +8,3 @@ require (
 	github.com/coredns/coredns v1.8.4
 	github.com/vishvananda/netlink v1.1.0
 )
-
-//replace github.com/coredns/coredns v1.8.4 => ../../coredns/coredns

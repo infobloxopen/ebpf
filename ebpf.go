@@ -87,7 +87,9 @@ func setup(c *caddy.Controller) error {
 	if config.Debug {
 		// poll map values for changes
 		go func() {
-			// todo: add stop channel; defer this to onstartup
+			// todo: add stop channel
+			// todo: defer this to onstartup
+			// todo: this essentially assumes an array map, make it also work with hash maps.
 			prev := make(map[int][]byte)
 			for {
 				var key, val []byte
