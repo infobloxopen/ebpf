@@ -9,8 +9,6 @@ import (
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	clog "github.com/coredns/coredns/plugin/pkg/log"
-
-	"github.com/chrisohaver/ebpf/elf"
 )
 
 var log = clog.NewWithPlugin("ebpf")
@@ -71,7 +69,7 @@ func setup(c *caddy.Controller) error {
 		return c.Err("`if` required")
 	}
 
-	detatchFn, p, m, err := elf.AttachXDP(elfName, ifName)
+	detatchFn, p, m, err := AttachXDP(elfName, ifName)
 	if err != nil {
 		panic(err)
 	}

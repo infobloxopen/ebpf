@@ -1,4 +1,4 @@
-package elf
+package ebpf
 
 import (
 	"encoding/binary"
