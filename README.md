@@ -15,7 +15,7 @@ When CoreDNS exits, the program will be detached from the interface.
 ebpf {
   elf PROGRAM
   if INTERFACE
-  map KEY VALUE
+  map [KEY] VALUE
 }
 ~~~
 
@@ -23,7 +23,10 @@ ebpf {
 * `if` **INTERFACE** - the interface to attach to
 * `map` **KEY** **VALUE** - the hexidecimal string representations of the **KEY** and **VALUE** of
   an entry to load into the eBPF map. You may specify the `map` option more than once to add multiple
-  items to the map.
+  items to the map. If **KEY** is not specified, the entry is treated as an array value.  To make multi-field
+  values easier to visually digest, **VALUE** may be delimited by dots.  e.g. `012345678.0000000000000000.9ABCDEF0`
+  This is for legibility of the Corefile only; any dots in **VALUE** are ignored by the parser.  When *debug* is used
+  the values written to log are not delimited.
   
 ## eBPF Program and Map Requirements
 
@@ -53,6 +56,17 @@ IP mask `255.255.0.0`, and a count of zero (`0A0B0000`, `FFFF0000`, and `0000000
   }
 }
 ```
+The following adds dots to the map value to make it easier to read.
+
+```
+. {
+  ebpf {
+    if eth0
+    elf my_xdp_program.o
+    map 00000000 0A0B0000.FFFF0000.00000000
+  }
+}
+```
 
 The following will enable debug to monitor map values and log when they change.
 
@@ -62,7 +76,7 @@ The following will enable debug to monitor map values and log when they change.
   ebpf {
     if eth0
     elf my_xdp_program.o
-    map 00000000 0A0B0000FFFF000000000000
+    map 00000000 0A0B0000.FFFF0000.00000000
   }
 }
 ```

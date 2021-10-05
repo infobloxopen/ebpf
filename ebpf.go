@@ -3,12 +3,14 @@ package ebpf
 import (
 	"encoding/hex"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/coredns/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	clog "github.com/coredns/coredns/plugin/pkg/log"
+	"github.com/pkg/errors"
 )
 
 var log = clog.NewWithPlugin("ebpf")
@@ -43,19 +45,27 @@ func setup(c *caddy.Controller) error {
 				ifName = args[0]
 			case "map":
 				args := c.RemainingArgs()
-				if len(args) != 2 {
+				if len(args) < 1 || len(args) > 3 {
 					return c.ArgErr()
 				}
-				key, err := hex.DecodeString(args[0])
+				if len(args) == 2 {
+					key, err := hex.DecodeString(args[0])
+					if err != nil {
+						return c.Errf("Map key '%v' must be a hexadecimal string", args[0])
+					}
+					val, err := parseMapValue(args[1])
+					if err != nil {
+						return err
+					}
+					mapValues = append(mapValues, mapValue{key, val})
+					continue
+				}
 
+				val, err := parseMapValue(args[0])
 				if err != nil {
-					return c.Errf("Map key '%v' must be a hexadecimal string", args[0])
+					return err
 				}
-				val, err := hex.DecodeString(args[1])
-				if err != nil {
-					return c.Errf("Map value '%v' must be a hexadecimal string", args[1])
-				}
-				mapValues = append(mapValues, mapValue{key, val})
+				mapValues = append(mapValues, mapValue{nil, val})
 			default:
 				return c.Errf("Unknown option '%v'", c.Val())
 			}
@@ -76,7 +86,16 @@ func setup(c *caddy.Controller) error {
 
 	// set map values
 	for i := range mapValues {
-		if err := m.Update(mapValues[i].key, mapValues[i].value, 0); err != nil {
+		if mapValues[i].key == nil {
+			// if key is not specified, use index as key (array map entry)
+			err := m.Update(i, mapValues[i].value, 0)
+			if err != nil {
+				return err
+			}
+		}
+		// if key is specified, use it as the key (hash map entry)
+		err := m.Update(mapValues[i].key, mapValues[i].value, 0)
+		if err != nil {
 			return err
 		}
 	}
@@ -131,4 +150,13 @@ func setup(c *caddy.Controller) error {
 	})
 
 	return nil
+}
+
+func parseMapValue(in string) ([]byte, error) {
+	// strip out .'s, decode as hex
+	val, err := hex.DecodeString(strings.Replace(in, ".", "", -1))
+	if err != nil {
+		return nil, errors.Errorf("Map value '%v' invalid format: %v", in, err)
+	}
+	return val, nil
 }
