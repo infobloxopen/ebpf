@@ -15,7 +15,7 @@ struct maprec {
 };
 ```
 
-## Examples
+## Example
 
 Allow two subnets`10.11.0.0/16` and `FC00:DEAD:CAFE:1::0/64`, block all others.
 

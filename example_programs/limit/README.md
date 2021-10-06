@@ -21,7 +21,7 @@ struct maprec {
 };
 ```
 
-## Examples
+## Example
 
 Define two subnets, `10.11.0.0/16` with a limit of 1000 packets per second, and `FC00:DEAD:CAFE:1::0/64` with a limit
 of 2000 packets per second.
@@ -32,10 +32,10 @@ of 2000 packets per second.
     elf xdp_limit_prog_kern.o
     
     # Fields denoted here for easier readability
-    #            |limit  |4net   |4msk   |6net                           |6msk                           |pkt-count      |next-interval  | padding - see Bugs
-    map 00000000 000003E80A0B0000FFFF000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-    map 00000001 000007D00000000000000000FC00DEADCAFE00010000000000000000FFFFFFFFFFFFFFFF00000000000000000000000000000000000000000000000000000000
-  } 
+    #   key      limit    4net     4msk     6net                             6msk                             pkt-count        next-interval    padding - see Bugs
+    map 00000000 000003E8.0A0B0000.FFFF0000.00000000000000000000000000000000.00000000000000000000000000000000.0000000000000000.0000000000000000.00000000
+    map 00000001 000007D0.00000000.00000000.FC00DEADCAFE00010000000000000000.FFFFFFFFFFFFFFFF0000000000000000.0000000000000000.0000000000000000.00000000
+  }
 ```
 
 ## Limitations
