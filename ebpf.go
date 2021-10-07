@@ -2,7 +2,6 @@ package ebpf
 
 import (
 	"encoding/hex"
-	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -72,7 +71,6 @@ func setup(c *caddy.Controller) error {
 			}
 		}
 	}
-	println("TEST 1")
 
 	if elfName == "" {
 		return c.Err("`elf` required")
@@ -86,9 +84,6 @@ func setup(c *caddy.Controller) error {
 		panic(err)
 	}
 
-	println("TEST 2")
-
-
 	// set map values
 	for i := range mapValues {
 		if mapValues[i].key == nil {
@@ -100,7 +95,6 @@ func setup(c *caddy.Controller) error {
 			continue
 		}
 		// if key is specified, use it as the key (hash map entry)
-		fmt.Printf("Adding Key %v", mapValues[i].key)
 		err := m.Update(mapValues[i].key, mapValues[i].value, 0)
 		if err != nil {
 			return err
