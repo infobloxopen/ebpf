@@ -52,4 +52,4 @@ requests.
 ## Bugs
 
 For some reason unknown to me, the map loader expects a map value length of 64 bytes, when the actual structure
-length is 56 bytes. Therefore, each map entry must be padded with 8 additional zero bytes to satisfy the map loader.
+length is 60 bytes. Therefore, each map entry must be padded with 8 additional zeros (4 bytes) to satisfy the map loader.

@@ -45,7 +45,8 @@ struct maprec {
 ```
 
 The following will attach `my_xdp_program.o` to `eth0`, and load data for IP network `10.11.0.0` ,
-IP mask `255.255.0.0`, and a count of zero (`0A0B0000`, `FFFF0000`, and `00000000` respectively) into key `00000000` of the map. 
+IP mask `255.255.0.0`, and a count of zero (`0A0B0000`, `FFFF0000`, and `00000000` respectively) into key `00000000` of
+the map.
 
 ```
 . {
@@ -81,3 +82,32 @@ The following will enable debug to monitor map values and log when they change.
 }
 ```
 
+The following adds map entries without specifying keys.  Each map entry is inserted as an array value, with an 
+automatically incrementing key.
+
+```
+. {
+  ebpf {
+    if eth0
+    elf my_xdp_program.o
+    map 0A0B0000.FFFF0000.00000000
+    map 0A0C0000.FFFF0000.00000000
+    map 0A0D0000.FFFF0000.00000000
+  }
+}
+```
+
+The example above is equivalent to the following but with keys specified.  Note that the keys are little endian in
+this example.
+
+```
+. {
+  ebpf {
+    if eth0
+    elf my_xdp_program.o
+    map 00000000 0A0B0000.FFFF0000.00000000
+    map 01000000 0A0C0000.FFFF0000.00000000
+    map 02000000 0A0D0000.FFFF0000.00000000
+  }
+}
+```
