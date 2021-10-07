@@ -8,7 +8,7 @@ eBPF XDP programs only receive ingress packets, so these limits do not apply to 
 The map record structure is as follows
 ```
 struct maprec {
-        __be32 limit; // packets allowed per interval
+        __be32 limit; // packets allowed per second
 
         __be32  ip4net;  // ipv4 network
         __be32  ip4mask; // ipv4 mask
@@ -20,6 +20,9 @@ struct maprec {
         __u64 next_interval;
 };
 ```
+
+A `limit` of zero signifies an empty map array entry. If the program reaches an empty map entry or the real end of the
+map before finding a source ip subnet match, it will allow the packet to pass through.
 
 ## Example
 

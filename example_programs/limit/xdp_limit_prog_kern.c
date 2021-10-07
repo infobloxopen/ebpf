@@ -22,7 +22,7 @@ struct maprec {
 };
 
 struct bpf_map_def SEC("maps") xdp_map = {
-	.type        = BPF_MAP_TYPE_HASH,
+	.type        = BPF_MAP_TYPE_ARRAY,
 	.key_size    = sizeof(__u32),
 	.value_size  = sizeof(struct maprec),
 	.max_entries = MAP_MAX_RECS,
@@ -40,6 +40,10 @@ static __always_inline __be16 limit_packet(__be32 v4saddr, struct in6_addr *v6sa
         	subnet = bpf_map_lookup_elem(&xdp_map, &key);
 		if (!subnet)
 			return XDP_PASS; // reached end of list without finding a match
+
+		if (!subnet->limit)
+			return XDP_PASS; // reached empty list item without finding a match
+
 		if (v4saddr) {
 			if (!subnet->ip4net) 
 				continue; // no ipv4 network defined, try next record
