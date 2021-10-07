@@ -2,6 +2,7 @@ package ebpf
 
 import (
 	"encoding/hex"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -71,6 +72,7 @@ func setup(c *caddy.Controller) error {
 			}
 		}
 	}
+	println("TEST 1")
 
 	if elfName == "" {
 		return c.Err("`elf` required")
@@ -84,16 +86,21 @@ func setup(c *caddy.Controller) error {
 		panic(err)
 	}
 
+	println("TEST 2")
+
+
 	// set map values
 	for i := range mapValues {
 		if mapValues[i].key == nil {
 			// if key is not specified, use index as key (array map entry)
-			err := m.Update(i, mapValues[i].value, 0)
+			err := m.Update(uint32(i), mapValues[i].value, 0)
 			if err != nil {
 				return err
 			}
+			continue
 		}
 		// if key is specified, use it as the key (hash map entry)
+		fmt.Printf("Adding Key %v", mapValues[i].key)
 		err := m.Update(mapValues[i].key, mapValues[i].value, 0)
 		if err != nil {
 			return err
@@ -114,7 +121,7 @@ func setup(c *caddy.Controller) error {
 				n := 0
 				for i.Next(&key, &val) {
 					if !reflect.DeepEqual(prev[n], val) {
-						log.Debugf("poll map(n=%v): val=%v", n, val)
+						log.Debugf("poll map(n=%v): key=%v val=%v", n, key, val)
 						valc := make([]byte, len(val))
 						copy(valc, val)
 						prev[n] = valc
@@ -122,7 +129,6 @@ func setup(c *caddy.Controller) error {
 					n++
 				}
 				time.Sleep(time.Millisecond * 100)
-
 			}
 		}()
 	}
