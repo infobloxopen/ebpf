@@ -6,8 +6,12 @@
 
 ## Description
 
-This plugin allows you to use an eBPF XDP program to analyze and filter traffic before it reaches CoreDNS.
-When CoreDNS exits, the program will be detached from the interface.
+This plugin allows you to use an eBPF XDP program to analyze and filter traffic before it reaches CoreDNS, and report
+very basic Prometheus metrics. When CoreDNS exits, the program will be detached from the interface. 
+
+This generic solution serves in part as an example of how you can integrate an eBPF XDP program with CoreDNS with a
+custom plugin. A custom plugin can be tailored to work only with your specific XDP program, for example, to enable easier
+data entry, or publish more varied metrics.
 
 ## Syntax
 
