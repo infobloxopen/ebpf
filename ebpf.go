@@ -1,8 +1,10 @@
 package ebpf
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,6 +13,8 @@ import (
 	"github.com/coredns/coredns/plugin"
 	clog "github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var log = clog.NewWithPlugin("ebpf")
@@ -24,9 +28,17 @@ func setup(c *caddy.Controller) error {
 		value []byte
 	}
 
+	type metric struct {
+		gauge    prometheus.Gauge
+		lastVal  uint64
+		key      []byte
+		pos, len int
+	}
+
 	var elfName string
 	var ifName string
 	var mapValues []mapValue
+	var metrics []*metric
 
 	for c.Next() {
 		for c.NextBlock() {
@@ -51,7 +63,7 @@ func setup(c *caddy.Controller) error {
 				if len(args) == 2 {
 					key, err := hex.DecodeString(args[0])
 					if err != nil {
-						return c.Errf("Map key '%v' must be a hexadecimal string", args[0])
+						return c.Errf("Map key '%v' must be a hexadecimal", args[0])
 					}
 					val, err := parseMapValue(args[1])
 					if err != nil {
@@ -66,6 +78,36 @@ func setup(c *caddy.Controller) error {
 					return err
 				}
 				mapValues = append(mapValues, mapValue{nil, val})
+			case "metric":
+				// metric NAME KEY POS LEN HELP
+				args := c.RemainingArgs()
+				key, err := hex.DecodeString(args[1])
+				if err != nil {
+					return c.Errf("metric KEY '%v' must be a hexadecimal", args[1])
+				}
+				pos, err := strconv.Atoi(args[2])
+				if err != nil {
+					return c.Errf("metric POS '%v' must be an integer", args[2])
+				}
+				length, err := strconv.Atoi(args[3])
+				if err != nil {
+					return c.Errf("metric LEN '%v' must be an integer number of bytes", args[3])
+				}
+				if length > 8 {
+					return c.Errf("metric LEN '%v' must no greater than 8", args[3])
+				}
+				metrics = append(metrics, &metric{
+					gauge: promauto.NewGauge(prometheus.GaugeOpts{
+						Namespace: plugin.Namespace,
+						Subsystem: "ebpf",
+						Name:      args[0],
+						Help:      args[4],
+					}),
+					key: key,
+					pos: pos,
+					len: length,
+				})
+
 			default:
 				return c.Errf("Unknown option '%v'", c.Val())
 			}
@@ -101,13 +143,37 @@ func setup(c *caddy.Controller) error {
 		}
 	}
 
+	if len(metrics) > 0 {
+		// poll map values for metric updates
+		go func() {
+			// todo: add stop channel, move to onstartup/onshutdown events
+			for {
+				for _, metric := range metrics {
+					var entry []byte
+					var valbytes = make([]byte, 8)
+					err := m.Lookup(metric.key, &entry)
+					if err != nil {
+						log.Errorf("Failed to look up metric: %v", err)
+						continue
+					}
+					copy(valbytes, entry[metric.pos:metric.pos+metric.len])
+					val := binary.LittleEndian.Uint64(valbytes)
+					if val != metric.lastVal {
+						metric.gauge.Set(float64(val))
+						metric.lastVal = val
+					}
+				}
+				time.Sleep(time.Millisecond * 100) // todo: make configurable?
+			}
+		}()
+	}
+
 	config := dnsserver.GetConfig(c)
 	if config.Debug {
 		// poll map values for changes
 		go func() {
 			// todo: add stop channel
 			// todo: defer this to onstartup
-			// todo: this essentially assumes an array map, make it also work with hash maps.
 			prev := make(map[int][]byte)
 			for {
 				var key, val []byte
@@ -115,7 +181,7 @@ func setup(c *caddy.Controller) error {
 				n := 0
 				for i.Next(&key, &val) {
 					if !reflect.DeepEqual(prev[n], val) {
-						log.Debugf("poll map(n=%v): key=%v val=%v", n, key, val)
+						log.Debugf("poll map: key=%v val=%v", key, val)
 						valc := make([]byte, len(val))
 						copy(valc, val)
 						prev[n] = valc
