@@ -6,7 +6,7 @@
 
 #include "../common/parsing_helpers.h"
 
-#define MAP_MAX_RECS 128
+#define MAP_MAX_RECS 512
 
 #define ACTION_BLOCK 1
 #define ACTION_ALLOW 2
@@ -17,6 +17,7 @@ struct maprec {
         __be32  ip4mask; // ipv4 mask
         struct in6_addr ip6net;  // ipv6 network
         struct in6_addr ip6mask; // ipv6 mask
+	__u32  count;
 };
 
 struct bpf_map_def SEC("maps") xdp_map = {
@@ -75,6 +76,7 @@ static __always_inline int check_addr(__be32 v4saddr, struct in6_addr *v6saddr){
 
 		dfault:
 		action = bpf_ntohl(subnet->action);
+		__sync_fetch_and_add(&subnet->count, 1);
 		break;
 		nextrec:;
 	}
