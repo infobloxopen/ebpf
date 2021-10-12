@@ -16,6 +16,7 @@ ebpf {
   elf PROGRAM
   if INTERFACE
   map [KEY] VALUE
+  metric NAME KEY POS LEN "HELP"
 }
 ~~~
 
@@ -27,11 +28,17 @@ ebpf {
   values easier to visually digest, **VALUE** may be delimited by dots.  e.g. `012345678.0000000000000000.9ABCDEF0`
   This is for legibility of the Corefile only; any dots in **VALUE** are ignored by the parser.  When *debug* is used
   the values written to log are not delimited.
+* `metric` **NAME** **KEY** **POS** **LEN** "**HELP**" - when used in conjunction with the *prometheus* plugin, register
+  a Prometheus "gauge" metric to expose a eBPF map value as an integer metric. The metric is named **NAME** with help
+  text of **HELP**.  The map value to use is determined by the **KEY**, byte position **POS**, and length **LEN** in
+  bytes.  **LEN** can be at most 8 bytes (64 bits).  The integer value should be little endian.
   
 ## eBPF Program and Map Requirements
 
 The program must be an XDP program, and main function named `xdp_prog`.
 The map must be named `xdp_map`.
+
+Some example programs written in C are included in `example_programs`.
 
 ## Examples
 
@@ -108,6 +115,23 @@ this example.
     map 00000000 0A0B0000.FFFF0000.00000000
     map 01000000 0A0C0000.FFFF0000.00000000
     map 02000000 0A0D0000.FFFF0000.00000000
+  }
+}
+```
+
+The following exposes a Prometheus metric.  The Metric is named `coredns_ebpf_example_total` and will reflect the
+value rightmost 4 bytes from map entry `02000000`.
+
+```
+. {
+  prometheus :9153
+  ebpf {
+    if eth0
+    elf my_xdp_program.o
+    map 00000000 0A0B0000.FFFF0000.00000000
+    map 01000000 0A0C0000.FFFF0000.00000000
+    map 02000000 0A0D0000.FFFF0000.00000000
+    metric example_total 02000000 12 4 "Example count."
   }
 }
 ```
