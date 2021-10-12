@@ -119,8 +119,8 @@ this example.
 }
 ```
 
-The following exposes a Prometheus metric.  The Metric is named `coredns_ebpf_example_total` and will reflect the
-value rightmost 4 bytes from map entry `02000000`.
+The following exposes a Prometheus metric.  The metric is named `coredns_ebpf_example_total` and the value will reflect
+the rightmost 4 bytes from map entry `02000000`.
 
 ```
 . {
@@ -131,7 +131,7 @@ value rightmost 4 bytes from map entry `02000000`.
     map 00000000 0A0B0000.FFFF0000.00000000
     map 01000000 0A0C0000.FFFF0000.00000000
     map 02000000 0A0D0000.FFFF0000.00000000
-    metric example_total 02000000 12 4 "Example count."
+    metric example_total 02000000 8 4 "Example count."
   }
 }
 ```
