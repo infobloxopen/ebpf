@@ -10,8 +10,9 @@ This *experimental* plugin allows you to use an eBPF XDP program to analyze and 
 and report very basic Prometheus metrics. When CoreDNS exits, the program will be detached from the interface. 
 
 This generic solution serves in part as an example of how you can integrate an eBPF XDP program with CoreDNS with a
-custom plugin. With your own custom integration you can tailor it to work with a specific XDP program, for example, to
-enable easier human-readable data entry, or publish more varied metrics.
+custom plugin. But due to the generic nature, map entry is somewhat cryptic and metrics must be defined in the Corefile,
+limiting their scope. When writing your own plugin, you can tailor it to work with a specific XDP program, for example,
+to enable easier human-readable data entry or publish more advanced metrics.
 
 ## Syntax
 
