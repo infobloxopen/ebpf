@@ -25,7 +25,7 @@ ebpf {
 }
 ~~~
 
-* `elf` **PROGRAM** - the ELF program to attach.  Se notes below on program requirements.
+* `elf` **PROGRAM** - the ELF program to attach.  See notes below on program requirements.
 * `if` **INTERFACE** - the interface to attach to
 * `map` **KEY** **VALUE** - the hexidecimal string representations of the **KEY** and **VALUE** of
   an entry to load into the eBPF map. You may specify the `map` option more than once to add multiple

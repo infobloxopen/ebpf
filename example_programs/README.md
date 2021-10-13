@@ -9,15 +9,20 @@ the lessons for least Basic 1-4, and Packet 1.
 The examples here use parsing helpers and a common Makefile from the xdp-tutorial project. The xdp-tutorial project is
 included as a submodule for convenience.
 
-If you want to build these programs, clone this repo with the following options:
+The compiled ELF programs are included in these example (`.o` files).
 
-```
-git clone --recurse-submodules https://github.com/chrisohaver/ebpf
-```
+If you want to build these programs yourself,
+1. Clone this repo with the following options:
 
-Or, if you have already cloned without submodules, you can do this after the fact with:
+   ```
+   git clone --recurse-submodules https://github.com/chrisohaver/ebpf
+   ```
 
-```
-git submodule update --init --recursive
-```
+   Or, if you have already cloned without submodules, you can do this after the fact with:
 
+   ```
+   git submodule update --init --recursive
+   ```
+
+2. Install dependencies per `example_programs/xdp-tutorial/setup_dependencies.org`
+3. `make`
