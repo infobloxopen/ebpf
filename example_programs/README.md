@@ -24,5 +24,6 @@ If you want to build these programs yourself,
    git submodule update --init --recursive
    ```
 
-2. Install dependencies per `example_programs/xdp-tutorial/setup_dependencies.org`
+2. Install dependencies per `example_programs/xdp-tutorial/setup_dependencies.org` (skipping the libbpf submodule init,
+   since that will have already been cloned recursively above)
 3. `make`
