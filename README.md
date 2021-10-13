@@ -37,6 +37,9 @@ ebpf {
   text of **HELP**.  The map value to use is determined by the **KEY**, byte position **POS**, and length **LEN** in
   bytes.  **LEN** can be at most 8 bytes (64 bits).  The integer value should be little endian.
   
+Please be aware of the considerable footgun potential of this plugin.  An XDP program attached to an interface will act
+on _all_ ingress packets to the interface - not just packets bound for CoreDNS.
+
 ## eBPF Program and Map Requirements
 
 The program must be an XDP program, and main function named `xdp_prog`.
