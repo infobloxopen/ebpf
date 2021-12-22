@@ -46,7 +46,7 @@ on _all_ ingress packets to the interface - not just packets bound for CoreDNS.
 The program must be an XDP program, and main function named `xdp_prog`.
 The map must be named `xdp_map`.
 
-Some example programs written in C are included in https://github.com/chrisohaver/ebpf/tree/master/example_programs.
+Some example programs written in C are included in https://github.com/infobloxopen/ebpf/tree/master/example_programs.
 
 ## Examples
 
