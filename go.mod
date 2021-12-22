@@ -1,4 +1,4 @@
-module github.com/chrisohaver/ebpf
+module github.com/infobloxopen/ebpf
 
 go 1.16
 
